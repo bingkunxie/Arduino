@@ -1,0 +1,16 @@
+[Unit]
+Description=Study station (LED + buzzer over MQTT)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=eaglevision
+WorkingDirectory=/home/eaglevision
+Environment=PYTHONUNBUFFERED=1
+ExecStartPre=+/bin/sh -c "pinctrl set 9,10,11 a0 || true"
+ExecStart=/home/eaglevision/station-venv/bin/python /home/eaglevision/study_station.py
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
