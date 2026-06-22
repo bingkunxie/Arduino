@@ -34,6 +34,8 @@
   .dot.offline { background: #d85a30; }
   .dotlabel { font-size: 12px; font-weight: 400; color: #888780; }
   .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .ledgroup { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .grouplabel { font-size: 13px; color: #5f5e5a; width: 46px; flex: none; }
   .red    { background: #fdecec; color: #a32d2d; border-color: #f0c0c0; }
   .green  { background: #eaf3de; color: #3b6d11; border-color: #c6e0a0; }
   .blue   { background: #e6f1fb; color: #185fa5; border-color: #b9d6f3; }
@@ -77,11 +79,19 @@
       <div class="station">
         <h2><span class="dot" id="dot-${id}"></span>Station ${id}
             <span class="dotlabel" id="dotlabel-${id}">unknown</span></h2>
-        <div class="row">
+        <div class="ledgroup"><span class="grouplabel">LED 1</span>
           <button class="red"    onclick="send('${id}','RED')">Red</button>
           <button class="green"  onclick="send('${id}','GREEN')">Green</button>
           <button class="blue"   onclick="send('${id}','BLUE')">Blue</button>
           <button class="ledoff" onclick="send('${id}','LED_OFF')">LED off</button>
+        </div>
+        <div class="ledgroup"><span class="grouplabel">LED 2</span>
+          <button class="red"    onclick="send('${id}','L2:RED')">Red</button>
+          <button class="green"  onclick="send('${id}','L2:GREEN')">Green</button>
+          <button class="blue"   onclick="send('${id}','L2:BLUE')">Blue</button>
+          <button class="ledoff" onclick="send('${id}','L2:OFF')">LED off</button>
+        </div>
+        <div class="row">
           <button class="buzon"  onclick="send('${id}','BUZZER_ON')">Buzzer on</button>
           <button class="buzoff" onclick="send('${id}','BUZZER_OFF')">Buzzer off</button>
         </div>
