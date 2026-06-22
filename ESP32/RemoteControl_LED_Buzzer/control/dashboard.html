@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study Station Controller</title>
+<script src="./mqtt.min.js"></script>
+<style>
+  :root { font-family: -apple-system, system-ui, sans-serif; }
+  body { margin: 0; padding: 24px; background: #f5f5f4; color: #1c1c1a; }
+  h1 { font-size: 20px; font-weight: 600; margin: 0 0 16px; }
+  .bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+         background: #fff; border: 1px solid #e2e1da; border-radius: 12px;
+         padding: 12px 16px; margin-bottom: 20px; }
+  .bar label { font-size: 13px; color: #5f5e5a; }
+  .bar input { font: inherit; font-size: 14px; padding: 6px 10px;
+               border: 1px solid #cfcec6; border-radius: 8px; }
+  .bar input#broker { width: 210px; }
+  .bar input#ids { width: 140px; }
+  button { font: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+           border: 1px solid transparent; border-radius: 8px; padding: 8px 12px; }
+  button:active { transform: translateY(1px); }
+  #connectBtn { background: #1d9e75; color: #fff; }
+  #status { font-size: 13px; font-weight: 500; }
+  #status.on  { color: #0f6e56; }
+  #status.off { color: #a32d2d; }
+  .alloff { background: #444441; color: #fff; padding: 10px 18px; font-size: 15px; }
+  .station { background: #fff; border: 1px solid #e2e1da; border-radius: 12px;
+             padding: 16px; margin-bottom: 14px; }
+  .station h2 { font-size: 16px; font-weight: 600; margin: 0 0 12px;
+                display: flex; align-items: center; gap: 8px; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: #b4b2a9; flex: none; }
+  .dot.online  { background: #1d9e75; }
+  .dot.offline { background: #d85a30; }
+  .dotlabel { font-size: 12px; font-weight: 400; color: #888780; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .red    { background: #fdecec; color: #a32d2d; border-color: #f0c0c0; }
+  .green  { background: #eaf3de; color: #3b6d11; border-color: #c6e0a0; }
+  .blue   { background: #e6f1fb; color: #185fa5; border-color: #b9d6f3; }
+  .ledoff { background: #f1efe8; color: #444441; border-color: #d8d6cc; }
+  .buzon  { background: #faeeda; color: #854f0b; border-color: #f3d6a0; }
+  .buzoff { background: #f1efe8; color: #444441; border-color: #d8d6cc; }
+  .disabled { opacity: .4; pointer-events: none; }
+  .hint { font-size: 12px; color: #888780; margin-top: 6px; }
+</style>
+</head>
+<body>
+  <h1>Study station controller</h1>
+
+  <div class="bar">
+    <label>Broker (WebSocket):</label>
+    <input id="broker" value="ws://localhost:9001">
+    <label>Station IDs:</label>
+    <input id="ids" value="1,2,3" title="comma-separated">
+    <button id="connectBtn">Connect</button>
+    <span id="status" class="off">disconnected</span>
+    <button class="alloff" onclick="send('all','ALL_OFF')">ALL OFF</button>
+  </div>
+
+  <div id="stations" class="disabled"></div>
+  <div class="hint">Run the dashboard on the same Mac as Mosquitto. If you open it from another
+    device, change <code>localhost</code> to the Mac's IP. Requires the Mosquitto websocket
+    listener on port 9001 (see mosquitto-websockets.conf).</div>
+
+<script>
+  let client = null;
+  const $ = (id) => document.getElementById(id);
+
+  function send(stationId, cmd) {
+    if (!client || !client.connected) { alert('Not connected to broker'); return; }
+    client.publish(`study/station/${stationId}/cmd`, cmd);
+  }
+
+  function buildStations() {
+    const ids = $('ids').value.split(',').map(s => s.trim()).filter(Boolean);
+    $('stations').innerHTML = ids.map(id => `
+      <div class="station">
+        <h2><span class="dot" id="dot-${id}"></span>Station ${id}
+            <span class="dotlabel" id="dotlabel-${id}">unknown</span></h2>
+        <div class="row">
+          <button class="red"    onclick="send('${id}','RED')">Red</button>
+          <button class="green"  onclick="send('${id}','GREEN')">Green</button>
+          <button class="blue"   onclick="send('${id}','BLUE')">Blue</button>
+          <button class="ledoff" onclick="send('${id}','LED_OFF')">LED off</button>
+          <button class="buzon"  onclick="send('${id}','BUZZER_ON')">Buzzer on</button>
+          <button class="buzoff" onclick="send('${id}','BUZZER_OFF')">Buzzer off</button>
+        </div>
+      </div>`).join('');
+  }
+
+  function setStatus(text, ok) {
+    $('status').textContent = text;
+    $('status').className = ok ? 'on' : 'off';
+    $('stations').className = ok ? '' : 'disabled';
+  }
+
+  // Update a station's online/offline dot from its retained status message.
+  function onStatusMessage(topic, payload) {
+    const m = topic.match(/^study\/station\/(.+)\/status$/);
+    if (!m) return;
+    const id = m[1], val = payload.toString().trim();
+    const dot = $(`dot-${id}`), lbl = $(`dotlabel-${id}`);
+    if (!dot) return;  // a station not shown in the IDs field
+    dot.className = 'dot ' + (val === 'online' ? 'online' : val === 'offline' ? 'offline' : '');
+    if (lbl) lbl.textContent = val || 'unknown';
+  }
+
+  $('connectBtn').onclick = () => {
+    if (client) { try { client.end(true); } catch (e) {} }
+    buildStations();
+    setStatus('connecting…', false);
+    client = mqtt.connect($('broker').value, { reconnectPeriod: 2000 });
+    client.on('connect', () => {
+      setStatus('connected', true);
+      client.subscribe('study/station/+/status');  // retained -> current state arrives at once
+    });
+    client.on('message', onStatusMessage);
+    client.on('reconnect', () => setStatus('reconnecting…', false));
+    client.on('close',  () => setStatus('disconnected', false));
+    client.on('error',  (e) => setStatus('error: ' + e.message, false));
+  };
+
+  buildStations();
+</script>
+</body>
+</html>
