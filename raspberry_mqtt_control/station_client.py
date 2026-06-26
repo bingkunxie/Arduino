@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import signal
+import threading
 import time
 from dataclasses import dataclass
 
@@ -76,10 +77,14 @@ class SpiRgbStrip:
         if self.spi is not None:
             self.spi.close()
 
+    @staticmethod
+    def wire_values(color: tuple[int, int, int]) -> tuple[int, int, int]:
+        return color
+
     def _encode_frame(self) -> list[int]:
         bits = []
         for red, green, blue in self.pixels:
-            for value in (green, red, blue):
+            for value in self.wire_values((red, green, blue)):
                 for bit in range(7, -1, -1):
                     bits.extend((1, 1, 0) if value & (1 << bit) else (1, 0, 0))
 
@@ -99,6 +104,12 @@ class PairOutput:
     buzzer: object | None
     rgb: SpiRgbStrip | None
 
+    def __post_init__(self) -> None:
+        self._led_stop = threading.Event()
+        self._led_thread: threading.Thread | None = None
+        self._buzzer_stop = threading.Event()
+        self._buzzer_thread: threading.Thread | None = None
+
     def on(self) -> None:
         if self.buzzer is None:
             print(f"{self.pair.name} buzzer GPIO {self.pair.gpio}: no buzzer output")
@@ -109,27 +120,65 @@ class PairOutput:
             self.rgb.set_pair(self.pair.pair_id, True)
 
     def set_led_color(self, color: tuple[int, int, int]) -> None:
+        self._stop_led_blink()
         if self.rgb is None:
             print(f"{self.pair.name}: no RGB output")
             return
         self.rgb.set_pair_color(self.pair.pair_id, color)
 
+    def blink_led_color(self, color: tuple[int, int, int], on_seconds: float, off_seconds: float) -> None:
+        self._stop_led_blink()
+        if self.rgb is None:
+            print(f"{self.pair.name}: no RGB output")
+            return
+
+        stop_event = threading.Event()
+        self._led_stop = stop_event
+
+        def run() -> None:
+            while not stop_event.is_set():
+                self.rgb.set_pair_color(self.pair.pair_id, color)
+                if stop_event.wait(on_seconds):
+                    break
+                self.rgb.set_pair_color(self.pair.pair_id, (0, 0, 0))
+                stop_event.wait(off_seconds)
+            self.rgb.set_pair_color(self.pair.pair_id, (0, 0, 0))
+
+        self._led_thread = threading.Thread(target=run, daemon=True)
+        self._led_thread.start()
+
     def beep(self, on_seconds: float, off_seconds: float, repeat: int) -> None:
+        self._stop_buzzer_beep()
         if self.buzzer is None:
             print(f"{self.pair.name}: no buzzer output")
             return
-        for _ in range(repeat):
-            self.buzzer.value = 0.5
-            time.sleep(on_seconds)
+
+        stop_event = threading.Event()
+        self._buzzer_stop = stop_event
+
+        def run() -> None:
+            for _ in range(repeat):
+                if stop_event.is_set():
+                    break
+                self.buzzer.value = 0.5
+                if stop_event.wait(on_seconds):
+                    break
+                self.buzzer.value = 0
+                if stop_event.wait(off_seconds):
+                    break
             self.buzzer.value = 0
-            time.sleep(off_seconds)
+
+        self._buzzer_thread = threading.Thread(target=run, daemon=True)
+        self._buzzer_thread.start()
 
     def buzzer_off(self) -> None:
+        self._stop_buzzer_beep()
         if self.buzzer is not None:
             self.buzzer.value = 0
 
     def off(self) -> None:
         self.buzzer_off()
+        self._stop_led_blink()
 
         if self.rgb is not None:
             self.rgb.set_pair(self.pair.pair_id, False)
@@ -138,6 +187,16 @@ class PairOutput:
         self.off()
         if self.buzzer is not None:
             self.buzzer.close()
+
+    def _stop_led_blink(self) -> None:
+        self._led_stop.set()
+        if self._led_thread is not None and self._led_thread.is_alive():
+            self._led_thread.join(timeout=1)
+
+    def _stop_buzzer_beep(self) -> None:
+        self._buzzer_stop.set()
+        if self._buzzer_thread is not None and self._buzzer_thread.is_alive():
+            self._buzzer_thread.join(timeout=1)
 
 
 class StationController:
@@ -207,6 +266,13 @@ class StationController:
             print(f"Ignoring unknown pair {pair_id}")
             return
         output.set_led_color((int(rgb[0]), int(rgb[1]), int(rgb[2])))
+
+    def blink_led(self, pair_id: int, rgb: list[int], on_seconds: float, off_seconds: float) -> None:
+        output = self.outputs.get(pair_id)
+        if output is None:
+            print(f"Ignoring unknown pair {pair_id}")
+            return
+        output.blink_led_color((int(rgb[0]), int(rgb[1]), int(rgb[2])), on_seconds, off_seconds)
 
     def beep_buzzer(self, pair_id: int, on_seconds: float, off_seconds: float, repeat: int) -> None:
         output = self.outputs.get(pair_id)
@@ -312,7 +378,15 @@ def main() -> None:
                 print(f"Command {topic_text}: invalid LED payload")
                 return
             print(f"Command {topic_text}: led {payload.get('color', action or rgb)}")
-            controller.set_led(pair_id, rgb)
+            if action == "blink":
+                controller.blink_led(
+                    pair_id,
+                    rgb,
+                    float(payload.get("on_seconds", 0.25)),
+                    float(payload.get("off_seconds", 0.25)),
+                )
+            else:
+                controller.set_led(pair_id, rgb)
             return
         if target == "buzzer":
             action = str(payload.get("action", "")).lower()

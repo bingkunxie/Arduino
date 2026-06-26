@@ -18,9 +18,11 @@ Stations 5-7 show separate LED and buzzer controls per pair:
 - `Red`: set that pair's RGB LED to full-brightness red.
 - `Yellow`: set that pair's RGB LED to full-brightness yellow.
 - `Green`: set that pair's RGB LED to full-brightness green.
-- `LED Off`: turn off only that pair's RGB LED.
-- `Beep`: pulse that pair's buzzer on for `0.25` seconds, then off for `0.25` seconds.
+- `LED Off`: stop blinking and turn off only that pair's RGB LED.
+- `Beep`: pulse that pair's buzzer on/off with a `0.25` second gap for `7` seconds.
 - `Buzzer Off`: turn off only that pair's buzzer output.
+
+LED color buttons blink that pair's RGB LED with a `0.25` second on/off delay until `LED Off` or another LED color is selected.
 
 Stations 5-7 use one addressable RGB LED per pair on GPIO 10 MOSI. Buzzers use the same GPIO wiring as Stations 1-4:
 
@@ -80,13 +82,13 @@ raspberry/stations/<station_id>/pairs/<pair_id>/set
 LED command example:
 
 ```json
-{"target":"led","color":"red","rgb":[255,0,0]}
+{"target":"led","action":"blink","color":"red","rgb":[255,0,0],"on_seconds":0.25,"off_seconds":0.25}
 ```
 
 Buzzer command example:
 
 ```json
-{"target":"buzzer","action":"beep","on_seconds":0.25,"off_seconds":0.25,"repeat":1}
+{"target":"buzzer","action":"beep","on_seconds":0.25,"off_seconds":0.25,"repeat":14}
 ```
 
 LED off command example:

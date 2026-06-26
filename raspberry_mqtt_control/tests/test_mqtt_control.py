@@ -13,6 +13,7 @@ from mqtt_control.messages import (
 )
 from mqtt_control.simple_mqtt import encode_publish_packet
 from server import render_dashboard
+from station_client import SpiRgbStrip
 
 
 class ConfigTests(unittest.TestCase):
@@ -145,7 +146,14 @@ class MessageTests(unittest.TestCase):
         self.assertEqual(message.topic, "raspberry/stations/station5/pairs/2/set")
         self.assertEqual(
             json.loads(message.payload),
-            {"target": "led", "color": "yellow", "rgb": [255, 255, 0]},
+            {
+                "target": "led",
+                "action": "blink",
+                "color": "yellow",
+                "rgb": [255, 255, 0],
+                "on_seconds": 0.25,
+                "off_seconds": 0.25,
+            },
         )
 
     def test_builds_led_off_command_payload(self):
@@ -168,7 +176,7 @@ class MessageTests(unittest.TestCase):
                 "action": "beep",
                 "on_seconds": 0.25,
                 "off_seconds": 0.25,
-                "repeat": 1,
+                "repeat": 14,
             },
         )
 
@@ -189,6 +197,12 @@ class SimpleMqttTests(unittest.TestCase):
         self.assertEqual(packet[0], 0x30)
         self.assertIn(b"raspberry/stations/station5/pairs/2/set", packet)
         self.assertTrue(packet.endswith(b'{"state":"on"}'))
+
+
+class SpiRgbStripTests(unittest.TestCase):
+    def test_wire_values_do_not_swap_red_and_green(self):
+        self.assertEqual(SpiRgbStrip.wire_values((255, 0, 0)), (255, 0, 0))
+        self.assertEqual(SpiRgbStrip.wire_values((0, 255, 0)), (0, 255, 0))
 
 
 if __name__ == "__main__":

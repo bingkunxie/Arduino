@@ -39,8 +39,11 @@ def build_led_command(station_id: str, pair_id: int, color: str) -> MqttMessage:
     payload = json.dumps(
         {
             "target": "led",
+            "action": "blink",
             "color": normalized_color,
             "rgb": LED_COLORS[normalized_color],
+            "on_seconds": 0.25,
+            "off_seconds": 0.25,
         },
         separators=(",", ":"),
     )
@@ -68,7 +71,7 @@ def build_buzzer_command(station_id: str, pair_id: int) -> MqttMessage:
             "action": "beep",
             "on_seconds": 0.25,
             "off_seconds": 0.25,
-            "repeat": 1,
+            "repeat": 14,
         },
         separators=(",", ":"),
     )
