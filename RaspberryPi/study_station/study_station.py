@@ -36,7 +36,7 @@ from gpiozero import PWMOutputDevice
 STATION_ID  = "2"                 # UNIQUE per station (ESP32 is "1")
 MQTT_HOST   = "bingkun-mac.local" # same broker as the ESP32 stations
 MQTT_PORT   = 1883
-NUM_LEDS    = 1                   # daisy-chained WS2812 count (set back to 2 when LED2 is re-added)
+NUM_LEDS    = 2                   # daisy-chained WS2812 count
 BUZZER_PIN  = 18                  # BCM GPIO (physical pin 12)
 BUZZER_FREQ = 2000                # Hz; raise for a louder piezo
 BLINK_S     = 0.5                 # on/off period for LEDs and buzzer

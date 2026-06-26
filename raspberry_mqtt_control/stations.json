@@ -1,0 +1,113 @@
+{
+  "stations": [
+    {
+      "id": "station1",
+      "name": "Station 1",
+      "host": "10.131.230.114",
+      "hardware": "LED + passive buzzer pairs",
+      "status": "offline",
+      "has_buzzer": true,
+      "rgb_gpio": null,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    },
+    {
+      "id": "station2",
+      "name": "Station 2",
+      "host": "10.131.29.46",
+      "hardware": "LED + passive buzzer pairs",
+      "status": "offline",
+      "has_buzzer": true,
+      "rgb_gpio": null,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    },
+    {
+      "id": "station3",
+      "name": "Station 3",
+      "host": "10.131.158.122",
+      "hardware": "LED + passive buzzer pairs",
+      "status": "offline",
+      "has_buzzer": true,
+      "rgb_gpio": null,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    },
+    {
+      "id": "station4",
+      "name": "Station 4",
+      "host": "10.131.43.99",
+      "hardware": "Addressable RGB LEDs plus passive buzzers",
+      "status": "offline",
+      "has_buzzer": true,
+      "rgb_gpio": 10,
+      "rgb_leds_per_pair": 4,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    },
+    {
+      "id": "station5",
+      "name": "Station 5",
+      "host": "10.131.34.51",
+      "hardware": "Addressable RGB LEDs plus passive buzzers",
+      "status": "online",
+      "has_buzzer": true,
+      "rgb_gpio": 10,
+      "rgb_leds_per_pair": 1,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    },
+    {
+      "id": "station6",
+      "name": "Station 6",
+      "host": "10.131.114.204",
+      "hardware": "Addressable RGB LEDs plus passive buzzers",
+      "status": "online",
+      "has_buzzer": true,
+      "rgb_gpio": 10,
+      "rgb_leds_per_pair": 1,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    },
+    {
+      "id": "station7",
+      "name": "Station 7",
+      "host": "10.131.246.201",
+      "hardware": "Addressable RGB LEDs plus passive buzzers",
+      "status": "online",
+      "has_buzzer": true,
+      "rgb_gpio": 10,
+      "rgb_leds_per_pair": 1,
+      "pairs": [
+        {"id": 1, "name": "Pair 1", "gpio": 17},
+        {"id": 2, "name": "Pair 2", "gpio": 27},
+        {"id": 3, "name": "Pair 3", "gpio": 22},
+        {"id": 4, "name": "Pair 4", "gpio": 23}
+      ]
+    }
+  ]
+}

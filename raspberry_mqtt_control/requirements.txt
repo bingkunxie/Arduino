@@ -1,0 +1,2 @@
+# Optional. The project includes a built-in MQTT client fallback.
+paho-mqtt>=2.0
