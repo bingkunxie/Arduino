@@ -124,6 +124,9 @@ class ConfigTests(unittest.TestCase):
         self.assertIn("Buzzer Off", html)
         self.assertIn("form.getAttribute('action')", html)
         self.assertIn("fetch(actionUrl", html)
+        self.assertIn("grid-template-columns: repeat(auto-fit, minmax(420px, 1fr))", html)
+        self.assertIn("container-type: inline-size", html)
+        self.assertIn("@container (max-width: 620px)", html)
 
 
 class MessageTests(unittest.TestCase):

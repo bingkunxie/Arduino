@@ -132,15 +132,16 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
     }}
     body {{
       margin: 0;
-      padding: 24px;
+      padding: clamp(14px, 2.4vw, 28px);
     }}
     main {{
-      max-width: 1120px;
+      max-width: 1480px;
       margin: 0 auto;
     }}
     h1 {{
       margin: 0 0 6px;
-      font-size: 28px;
+      font-size: clamp(23px, 3vw, 28px);
+      line-height: 1.15;
       letter-spacing: 0;
     }}
     .meta {{
@@ -162,14 +163,17 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
     }}
     .grid {{
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
       gap: 16px;
     }}
     .station {{
       background: #fff;
       border: 1px solid #dce2e6;
       border-radius: 8px;
+      box-sizing: border-box;
+      container-type: inline-size;
       padding: 16px;
+      min-width: 0;
     }}
     .station header {{
       display: flex;
@@ -213,7 +217,7 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
     }}
     .pair-row {{
       display: grid;
-      grid-template-columns: minmax(120px, 1fr) minmax(0, 2fr);
+      grid-template-columns: minmax(118px, 150px) minmax(0, 1fr);
       align-items: start;
       gap: 14px;
       padding: 10px 0;
@@ -225,7 +229,7 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
     .controls {{
       display: grid;
       gap: 8px;
-      justify-items: end;
+      justify-items: stretch;
       min-width: 0;
     }}
     form {{
@@ -235,13 +239,18 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
       margin: 0;
     }}
     .control-group {{
+      display: grid;
       align-items: center;
-      justify-content: flex-end;
       width: 100%;
+    }}
+    .led-group {{
+      grid-template-columns: 56px repeat(5, minmax(64px, 1fr));
+    }}
+    .buzzer-group {{
+      grid-template-columns: 56px repeat(2, minmax(94px, 1fr));
     }}
     .group-label {{
       color: #41505d;
-      flex: 0 0 56px;
       font-size: 12px;
       font-weight: 700;
       text-align: right;
@@ -253,8 +262,11 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
       color: #fff;
       cursor: pointer;
       font-size: 14px;
+      line-height: 1.1;
+      min-height: 38px;
       min-width: 54px;
       padding: 8px 12px;
+      white-space: nowrap;
     }}
     button.on {{
       background: #197047;
@@ -284,7 +296,7 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
     button.color.green {{
       background: #197047;
     }}
-    @media (max-width: 680px) {{
+    @container (max-width: 620px) {{
       body {{
         padding: 14px;
       }}
@@ -295,14 +307,19 @@ def render_dashboard(stations, broker_host: str, dry_run: bool, notice: str = ""
         justify-items: stretch;
       }}
       .control-group {{
-        justify-content: flex-start;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
       }}
       .group-label {{
-        flex-basis: 100%;
+        grid-column: 1 / -1;
         text-align: left;
       }}
       button {{
-        flex: 1 1 72px;
+        width: 100%;
+      }}
+    }}
+    @media (max-width: 520px) {{
+      .grid {{
+        grid-template-columns: minmax(0, 1fr);
       }}
     }}
   </style>
